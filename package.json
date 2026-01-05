@@ -1,6 +1,6 @@
 {
   "name": "stina-ext-people",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "People Registry extension for Stina - remember people mentioned in conversations",
   "type": "module",
   "main": "dist/index.js",
