@@ -12,6 +12,8 @@ import type { PersonMetadata } from '../types.js'
  * Parameters for the upsert tool
  */
 interface UpsertParams {
+  /** Person ID (optional, for updates) */
+  id?: string
   /** Person name (required) */
   name: string
   /** Description or notes about the person */
@@ -40,6 +42,10 @@ export function createUpsertTool(repository: PeopleRepository): Tool {
     parameters: {
       type: 'object',
       properties: {
+        id: {
+          type: 'string',
+          description: 'The unique ID of the person to update',
+        },
         name: {
           type: 'string',
           description: 'The name of the person (required)',
@@ -75,6 +81,7 @@ export function createUpsertTool(repository: PeopleRepository): Tool {
     async execute(params: Record<string, unknown>): Promise<ToolResult> {
       try {
         const {
+          id,
           name,
           description,
           relationship,
@@ -84,7 +91,7 @@ export function createUpsertTool(repository: PeopleRepository): Tool {
           workplace,
         } = params as Partial<UpsertParams>
 
-        if (!name || typeof name !== 'string' || name.trim() === '') {
+        if (!id && (!name || typeof name !== 'string' || name.trim() === '')) {
           return {
             success: false,
             error: 'Name is required and must be a non-empty string',
@@ -99,8 +106,35 @@ export function createUpsertTool(repository: PeopleRepository): Tool {
         if (birthday) metadata.birthday = birthday
         if (workplace) metadata.workplace = workplace
 
+        if (id) {
+          const updated = await repository.update(id, {
+            name: name?.trim(),
+            description,
+            metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+          })
+
+          if (!updated) {
+            return {
+              success: false,
+              error: `No person found with ID "${id}"`,
+            }
+          }
+
+          return {
+            success: true,
+            data: {
+              id: updated.id,
+              name: updated.name,
+              description: updated.description,
+              metadata: updated.metadata,
+              created: false,
+              message: `Updated information for "${updated.name}"`,
+            },
+          }
+        }
+
         const { person, created } = await repository.upsert({
-          name: name.trim(),
+          name: name!.trim(),
           description,
           metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
         })
