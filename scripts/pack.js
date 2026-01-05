@@ -11,43 +11,92 @@
  * Output is placed in the releases/ directory.
  */
 
-import { readFileSync, existsSync, mkdirSync } from 'node:fs'
+import { readFileSync, existsSync, mkdirSync, createWriteStream } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { execSync } from 'node:child_process'
+import archiver from 'archiver'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const rootDir = join(__dirname, '..')
 const releasesDir = join(rootDir, 'releases')
 
 // Read manifest for version
-const manifest = JSON.parse(readFileSync(join(rootDir, 'manifest.json'), 'utf-8'))
+let manifest
+try {
+  manifest = JSON.parse(readFileSync(join(rootDir, 'manifest.json'), 'utf-8'))
+} catch (error) {
+  console.error('Error: Failed to read manifest.json:', error.message)
+  process.exit(1)
+}
+
 const outputName = `${manifest.id}-${manifest.version}.zip`
 const outputPath = join(releasesDir, outputName)
 
-// Check if dist exists
-if (!existsSync(join(rootDir, 'dist', 'index.js'))) {
-  console.error('Error: dist/index.js not found. Run "pnpm build" first.')
-  process.exit(1)
+// Check if required files exist
+const requiredFiles = [
+  { path: join(rootDir, 'dist', 'index.js'), name: 'dist/index.js' },
+  { path: join(rootDir, 'manifest.json'), name: 'manifest.json' },
+  { path: join(rootDir, 'README.md'), name: 'README.md' }
+]
+
+for (const file of requiredFiles) {
+  if (!existsSync(file.path)) {
+    console.error(`Error: ${file.name} not found.${file.name === 'dist/index.js' ? ' Run "pnpm build" first.' : ''}`)
+    process.exit(1)
+  }
 }
 
 // Ensure releases directory exists
 if (!existsSync(releasesDir)) {
-  mkdirSync(releasesDir, { recursive: true })
-  console.log('Created releases/ directory')
+  try {
+    mkdirSync(releasesDir, { recursive: true })
+    console.log('Created releases/ directory')
+  } catch (error) {
+    console.error('Error: Failed to create releases directory:', error.message)
+    process.exit(1)
+  }
 }
 
-// Create zip using system zip command
-try {
-  execSync(`zip -j "${outputPath}" manifest.json dist/index.js README.md`, {
-    cwd: rootDir,
-    stdio: 'inherit',
+// Create zip file using archiver
+async function createZip() {
+  const output = createWriteStream(outputPath)
+  const archive = archiver('zip', {
+    zlib: { level: 9 } // Maximum compression
   })
-  console.log(`\n✓ Created: releases/${outputName}`)
-  console.log('\nTo create a release:')
-  console.log('1. Push changes to main branch')
-  console.log('2. GitHub Action will automatically create a release')
-} catch (error) {
-  console.error('Failed to create zip:', error.message)
-  process.exit(1)
+
+  return new Promise((resolve, reject) => {
+    output.on('close', () => {
+      console.log(`\n✓ Created: releases/${outputName} (${archive.pointer()} bytes)`)
+      console.log('\nTo create a release:')
+      console.log('1. Push changes to main branch')
+      console.log('2. GitHub Action will automatically create a release')
+      resolve()
+    })
+
+    archive.on('error', (error) => {
+      reject(new Error(`Failed to create zip file: ${error.message}`))
+    })
+
+    archive.on('warning', (error) => {
+      // Treat all warnings as errors to ensure archive integrity
+      reject(new Error(`Failed to create zip file: ${error.message}`))
+    })
+
+    // Pipe archive data to the file
+    archive.pipe(output)
+
+    // Add files to archive
+    archive.file(join(rootDir, 'manifest.json'), { name: 'manifest.json' })
+    archive.file(join(rootDir, 'dist', 'index.js'), { name: 'index.js' })
+    archive.file(join(rootDir, 'README.md'), { name: 'README.md' })
+
+    // Finalize the archive
+    archive.finalize()
+  })
 }
+
+// Run the archive creation
+createZip().catch((error) => {
+  console.error('Error:', error.message)
+  process.exit(1)
+})
