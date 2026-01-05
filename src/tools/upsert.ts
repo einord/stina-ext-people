@@ -146,26 +146,18 @@ export function createUpsertTool(repository: PeopleRepository): Tool {
             metadata: hasMetadataFields ? mergedMetadata : undefined,
           })
 
-          if (!updated) {
-            return {
-              success: false,
-              error: `Failed to update person with ID "${id}"`,
-            }
-          }
-
           return {
             success: true,
             data: {
-              id: updated.id,
-              name: updated.name,
-              description: updated.description,
-              metadata: updated.metadata,
+              id: updated!.id,
+              name: updated!.name,
+              description: updated!.description,
+              metadata: updated!.metadata,
               created: false,
-              message: `Updated information for "${updated.name}"`,
+              message: `Updated information for "${updated!.name}"`,
             },
           }
         }
-
 
         // For create/upsert by name, build metadata from provided fields
         const metadata: PersonMetadata = {}
