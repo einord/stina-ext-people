@@ -65,7 +65,7 @@ export class PeopleRepository {
     if (this.initialized) return
 
     await this.db.execute(
-      `CREATE TABLE IF NOT EXISTS ext_people_persons (
+      `CREATE TABLE IF NOT EXISTS ext_people_registry_persons (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         normalized_name TEXT NOT NULL,
@@ -77,8 +77,8 @@ export class PeopleRepository {
     )
 
     await this.db.execute(
-      `CREATE INDEX IF NOT EXISTS ext_people_persons_normalized_name_idx
-       ON ext_people_persons(normalized_name)`
+      `CREATE INDEX IF NOT EXISTS ext_people_registry_persons_normalized_name_idx
+       ON ext_people_registry_persons(normalized_name)`
     )
 
     this.initialized = true
@@ -99,7 +99,7 @@ export class PeopleRepository {
       const normalizedQuery = normalizeName(query)
       sqlStr = `
         SELECT id, name, normalized_name, description, metadata, created_at, updated_at
-        FROM ext_people_persons
+        FROM ext_people_registry_persons
         WHERE normalized_name LIKE ?
         ORDER BY name ASC
         LIMIT ? OFFSET ?
@@ -108,7 +108,7 @@ export class PeopleRepository {
     } else {
       sqlStr = `
         SELECT id, name, normalized_name, description, metadata, created_at, updated_at
-        FROM ext_people_persons
+        FROM ext_people_registry_persons
         ORDER BY name ASC
         LIMIT ? OFFSET ?
       `
@@ -154,7 +154,7 @@ export class PeopleRepository {
       updated_at: string
     }>(
       `SELECT id, name, normalized_name, description, metadata, created_at, updated_at
-       FROM ext_people_persons WHERE id = ?`,
+       FROM ext_people_registry_persons WHERE id = ?`,
       [id]
     )
 
@@ -189,7 +189,7 @@ export class PeopleRepository {
       updated_at: string
     }>(
       `SELECT id, name, normalized_name, description, metadata, created_at, updated_at
-       FROM ext_people_persons WHERE normalized_name = ?`,
+       FROM ext_people_registry_persons WHERE normalized_name = ?`,
       [normalizedName]
     )
 
@@ -220,7 +220,7 @@ export class PeopleRepository {
     const metadata = input.metadata ?? null
 
     await this.db.execute(
-      `INSERT INTO ext_people_persons (id, name, normalized_name, description, metadata, created_at, updated_at)
+      `INSERT INTO ext_people_registry_persons (id, name, normalized_name, description, metadata, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
@@ -268,7 +268,7 @@ export class PeopleRepository {
     }
 
     await this.db.execute(
-      `UPDATE ext_people_persons
+      `UPDATE ext_people_registry_persons
        SET name = ?, normalized_name = ?, description = ?, metadata = ?, updated_at = ?
        WHERE id = ?`,
       [
@@ -312,7 +312,7 @@ export class PeopleRepository {
     const existing = await this.getById(id)
     if (!existing) return false
 
-    await this.db.execute('DELETE FROM ext_people_persons WHERE id = ?', [id])
+    await this.db.execute('DELETE FROM ext_people_registry_persons WHERE id = ?', [id])
     return true
   }
 
@@ -325,7 +325,7 @@ export class PeopleRepository {
     const existing = await this.getByName(name)
     if (!existing) return false
 
-    await this.db.execute('DELETE FROM ext_people_persons WHERE id = ?', [existing.id])
+    await this.db.execute('DELETE FROM ext_people_registry_persons WHERE id = ?', [existing.id])
     return true
   }
 }

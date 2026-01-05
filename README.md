@@ -56,7 +56,7 @@ When you mention someone in a conversation, Stina can:
 
 ## Data Storage
 
-The extension stores data in Stina's database using the `database.own` permission. Data is stored in a table prefixed with `ext_people_` to avoid conflicts.
+The extension stores data in Stina's database using the `database.own` permission. Data is stored in a table prefixed with `ext_people_registry_` to avoid conflicts.
 
 ### Person Record Fields
 
