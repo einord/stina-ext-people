@@ -58,44 +58,45 @@ if (!existsSync(releasesDir)) {
 }
 
 // Create zip file using archiver
-const output = createWriteStream(outputPath)
-const archive = archiver('zip', {
-  zlib: { level: 9 } // Maximum compression
-})
+async function createZip() {
+  const output = createWriteStream(outputPath)
+  const archive = archiver('zip', {
+    zlib: { level: 9 } // Maximum compression
+  })
 
-output.on('close', () => {
-  console.log(`\n✓ Created: releases/${outputName} (${archive.pointer()} bytes)`)
-  console.log('\nTo create a release:')
-  console.log('1. Push changes to main branch')
-  console.log('2. GitHub Action will automatically create a release')
-})
+  return new Promise((resolve, reject) => {
+    output.on('close', () => {
+      console.log(`\n✓ Created: releases/${outputName} (${archive.pointer()} bytes)`)
+      console.log('\nTo create a release:')
+      console.log('1. Push changes to main branch')
+      console.log('2. GitHub Action will automatically create a release')
+      resolve()
+    })
 
-archive.on('error', (error) => {
-  console.error('Error: Failed to create zip file:', error.message)
-  process.exit(1)
-})
+    archive.on('error', (error) => {
+      reject(new Error(`Failed to create zip file: ${error.message}`))
+    })
 
-archive.on('warning', (error) => {
-  if (error.code === 'ENOENT') {
-    console.warn('Warning:', error.message)
-  } else {
-    console.error('Error: Failed to create zip file:', error.message)
-    process.exit(1)
-  }
-})
+    archive.on('warning', (error) => {
+      // Treat all warnings as errors to ensure archive integrity
+      reject(new Error(`Failed to create zip file: ${error.message}`))
+    })
 
-// Pipe archive data to the file
-archive.pipe(output)
+    // Pipe archive data to the file
+    archive.pipe(output)
 
-// Add files to archive
-try {
-  archive.file(join(rootDir, 'manifest.json'), { name: 'manifest.json' })
-  archive.file(join(rootDir, 'dist', 'index.js'), { name: 'index.js' })
-  archive.file(join(rootDir, 'README.md'), { name: 'README.md' })
-  
-  // Finalize the archive
-  archive.finalize()
-} catch (error) {
-  console.error('Error: Failed to add files to zip archive:', error.message)
-  process.exit(1)
+    // Add files to archive
+    archive.file(join(rootDir, 'manifest.json'), { name: 'manifest.json' })
+    archive.file(join(rootDir, 'dist', 'index.js'), { name: 'index.js' })
+    archive.file(join(rootDir, 'README.md'), { name: 'README.md' })
+
+    // Finalize the archive
+    archive.finalize()
+  })
 }
+
+// Run the archive creation
+createZip().catch((error) => {
+  console.error('Error:', error.message)
+  process.exit(1)
+})
