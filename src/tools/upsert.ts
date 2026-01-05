@@ -91,47 +91,81 @@ export function createUpsertTool(repository: PeopleRepository): Tool {
           workplace,
         } = params as Partial<UpsertParams>
 
+        // When updating by ID, name is optional; when creating/upserting by name, name is required
         if (!id && (!name || typeof name !== 'string' || name.trim() === '')) {
           return {
             success: false,
-            error: 'Name is required and must be a non-empty string',
+            error: 'Name is required when not updating by ID',
           }
         }
 
         // Build metadata from provided fields
-        const metadata: PersonMetadata = {}
-        if (relationship) metadata.relationship = relationship
-        if (email) metadata.email = email
-        if (phone) metadata.phone = phone
-        if (birthday) metadata.birthday = birthday
-        if (workplace) metadata.workplace = workplace
+        // Track which fields were explicitly provided (even if empty string, to allow clearing)
+        const hasMetadataFields = 
+          relationship !== undefined || 
+          email !== undefined || 
+          phone !== undefined || 
+          birthday !== undefined || 
+          workplace !== undefined
 
         if (id) {
-          const updated = await repository.update(id, {
-            name: name?.trim(),
-            description,
-            metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-          })
-
-          if (!updated) {
+          // When updating by ID, we need to merge metadata with existing values
+          const existing = await repository.getById(id)
+          if (!existing) {
             return {
               success: false,
               error: `No person found with ID "${id}"`,
             }
           }
 
+          // Start with existing metadata or empty object
+          const mergedMetadata: PersonMetadata = { ...(existing.metadata || {}) }
+          
+          // Update only the fields that were explicitly provided
+          // Empty strings clear the field (set to undefined)
+          if (relationship !== undefined) {
+            mergedMetadata.relationship = relationship.trim() || undefined
+          }
+          if (email !== undefined) {
+            mergedMetadata.email = email.trim() || undefined
+          }
+          if (phone !== undefined) {
+            mergedMetadata.phone = phone.trim() || undefined
+          }
+          if (birthday !== undefined) {
+            mergedMetadata.birthday = birthday.trim() || undefined
+          }
+          if (workplace !== undefined) {
+            mergedMetadata.workplace = workplace.trim() || undefined
+          }
+
+          const updated = await repository.update(id, {
+            name: name?.trim(),
+            description,
+            // Only update metadata if at least one metadata field was provided
+            metadata: hasMetadataFields ? mergedMetadata : undefined,
+          })
+
           return {
             success: true,
             data: {
-              id: updated.id,
-              name: updated.name,
-              description: updated.description,
-              metadata: updated.metadata,
+              id: updated!.id,
+              name: updated!.name,
+              description: updated!.description,
+              metadata: updated!.metadata,
               created: false,
-              message: `Updated information for "${updated.name}"`,
+              message: `Updated information for "${updated!.name}"`,
             },
           }
         }
+
+        // For create/upsert by name, build metadata from provided fields
+        const metadata: PersonMetadata = {}
+        if (relationship?.trim()) metadata.relationship = relationship.trim()
+        if (email?.trim()) metadata.email = email.trim()
+        if (phone?.trim()) metadata.phone = phone.trim()
+        if (birthday?.trim()) metadata.birthday = birthday.trim()
+        if (workplace?.trim()) metadata.workplace = workplace.trim()
 
         const { person, created } = await repository.upsert({
           name: name!.trim(),
