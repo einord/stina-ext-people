@@ -67,16 +67,24 @@ export function createGetTool(repository: PeopleRepository): Tool {
           }
         }
 
+        const metadata = person.metadata ?? {}
+        const data: Record<string, unknown> = {
+          id: person.id,
+          name: person.name,
+          description: person.description,
+          createdAt: person.createdAt,
+          updatedAt: person.updatedAt,
+        }
+
+        if (metadata.relationship !== undefined) data.relationship = metadata.relationship
+        if (metadata.email !== undefined) data.email = metadata.email
+        if (metadata.phone !== undefined) data.phone = metadata.phone
+        if (metadata.birthday !== undefined) data.birthday = metadata.birthday
+        if (metadata.workplace !== undefined) data.workplace = metadata.workplace
+
         return {
           success: true,
-          data: {
-            id: person.id,
-            name: person.name,
-            description: person.description,
-            metadata: person.metadata,
-            createdAt: person.createdAt,
-            updatedAt: person.updatedAt,
-          },
+          data,
         }
       } catch (error) {
         return {
