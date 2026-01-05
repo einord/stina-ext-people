@@ -2,7 +2,7 @@
  * Database Schema
  *
  * Typed schema for the People Registry extension using Drizzle ORM.
- * Table names are prefixed with ext_people_ to avoid conflicts.
+ * Table names are prefixed with ext_people_registry_ to avoid conflicts.
  */
 
 import { index, sqliteTable, text } from 'drizzle-orm/sqlite-core'
@@ -13,7 +13,7 @@ import type { PersonMetadata } from '../types.js'
  * Stores information about people mentioned in conversations
  */
 export const persons = sqliteTable(
-  'ext_people_persons',
+  'ext_people_registry_persons',
   {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
@@ -24,7 +24,7 @@ export const persons = sqliteTable(
     updatedAt: text('updated_at').notNull(),
   },
   (table) => [
-    index('ext_people_persons_normalized_name_idx').on(table.normalizedName),
+    index('ext_people_registry_persons_normalized_name_idx').on(table.normalizedName),
   ]
 )
 
