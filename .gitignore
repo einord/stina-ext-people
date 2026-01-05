@@ -18,9 +18,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Package files (generated)
-*.tgz
-
 # Lock files (use pnpm-lock.yaml from root if in monorepo)
 package-lock.json
 yarn.lock
