@@ -1,0 +1,37 @@
+{
+  "name": "stina-ext-people",
+  "version": "0.0.1",
+  "description": "People Registry extension for Stina - remember people mentioned in conversations",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "pack-extension": "node scripts/pack.js"
+  },
+  "keywords": [
+    "stina",
+    "extension",
+    "people",
+    "contacts",
+    "registry"
+  ],
+  "author": {
+    "name": "Stina Team",
+    "url": "https://github.com/einord"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/einord/stina-ext-people.git"
+  },
+  "devDependencies": {
+    "@stina/extension-api": "file:stina-extension-api-0.5.0.tgz",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.1"
+  }
+}
