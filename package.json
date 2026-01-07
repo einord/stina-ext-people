@@ -1,6 +1,6 @@
 {
   "name": "stina-ext-people",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "People Registry extension for Stina - remember people mentioned in conversations",
   "type": "module",
   "main": "dist/index.js",
@@ -27,7 +27,7 @@
     "url": "https://github.com/einord/stina-ext-people.git"
   },
   "devDependencies": {
-    "@stina/extension-api": "file:stina-extension-api-0.5.0.tgz",
+    "@stina/extension-api": "^0.6.5",
     "@types/archiver": "^6.0.2",
     "archiver": "^7.0.1",
     "tsup": "^8.0.0",
