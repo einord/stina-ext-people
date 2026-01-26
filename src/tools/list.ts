@@ -4,7 +4,7 @@
  * Search and list people in the registry.
  */
 
-import type { Tool, ToolResult } from '@stina/extension-api/runtime'
+import type { Tool, ToolResult, ExecutionContext } from '@stina/extension-api/runtime'
 import type { PeopleRepository } from '../db/repository.js'
 
 /**
@@ -39,7 +39,7 @@ export function createListTool(repository: PeopleRepository): Tool {
       },
     },
 
-    async execute(params: Record<string, unknown>): Promise<ToolResult> {
+    async execute(params: Record<string, unknown>, _execContext: ExecutionContext): Promise<ToolResult> {
       try {
         const { query, limit = 20 } = params as ListParams
 

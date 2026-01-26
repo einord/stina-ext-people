@@ -13,8 +13,8 @@ importers:
         version: 0.45.1
     devDependencies:
       '@stina/extension-api':
-        specifier: ^0.6.5
-        version: 0.6.5
+        specifier: link:../stina/packages/extension-api
+        version: link:../stina/packages/extension-api
       '@types/archiver':
         specifier: ^6.0.2
         version: 6.0.4
@@ -316,9 +316,6 @@ packages:
     resolution: {integrity: sha512-hYT5d3YNdSh3mbCU1gwQyPgQd3T2ne0A3KG8KSBdav5TiBg6eInVmV+TeR5uHufiIgSFg0XsOWGW5/RhNcSvPg==}
     cpu: [x64]
     os: [win32]
-
-  '@stina/extension-api@0.6.5':
-    resolution: {integrity: sha512-xwXe7W78US2vE3v7No14+ebeJWOzYXNwygbKVHf1HwIk0MYHenk88LbH6pUDm1bYKJCKXbq0IXMwnP5NrO06WQ==}
 
   '@types/archiver@6.0.4':
     resolution: {integrity: sha512-ULdQpARQ3sz9WH4nb98mJDYA0ft2A8C4f4fovvUcFwINa1cgGjY36JCAYuP5YypRq4mco1lJp1/7jEMS2oR0Hg==}
@@ -1068,8 +1065,6 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.54.0':
     optional: true
-
-  '@stina/extension-api@0.6.5': {}
 
   '@types/archiver@6.0.4':
     dependencies:

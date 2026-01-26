@@ -4,7 +4,7 @@
  * Remove a person from the registry.
  */
 
-import type { Tool, ToolResult } from '@stina/extension-api/runtime'
+import type { Tool, ToolResult, ExecutionContext } from '@stina/extension-api/runtime'
 import type { PeopleRepository } from '../db/repository.js'
 
 /**
@@ -39,7 +39,7 @@ export function createDeleteTool(repository: PeopleRepository): Tool {
       },
     },
 
-    async execute(params: Record<string, unknown>): Promise<ToolResult> {
+    async execute(params: Record<string, unknown>, _execContext: ExecutionContext): Promise<ToolResult> {
       try {
         const { id, name } = params as DeleteParams
 
