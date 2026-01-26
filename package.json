@@ -27,11 +27,11 @@
     "url": "https://github.com/einord/stina-ext-people.git"
   },
   "devDependencies": {
-    "@stina/extension-api": "^0.6.5",
-    "@types/archiver": "^6.0.2",
+    "@stina/extension-api": "file:../stina/packages/extension-api",
+    "@types/archiver": "^7.0.0",
     "archiver": "^7.0.1",
-    "tsup": "^8.0.0",
-    "typescript": "^5.3.0"
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.1"
