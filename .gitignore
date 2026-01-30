@@ -21,3 +21,6 @@ npm-debug.log*
 # Lock files (use pnpm-lock.yaml from root if in monorepo)
 package-lock.json
 yarn.lock
+
+# Local pnpm link overrides
+pnpm-workspace.yaml
