@@ -5,7 +5,7 @@
  */
 
 import type { Tool, ToolResult, ExecutionContext } from '@stina/extension-api/runtime'
-import type { PeopleRepository } from '../db/repository.js'
+import { PeopleRepository } from '../db/repository.js'
 
 /**
  * Parameters for the get tool
@@ -18,9 +18,12 @@ interface GetParams {
 }
 
 /**
- * Create the get person tool
+ * Create the get person tool.
+ * Uses user-scoped storage to ensure proper data isolation.
+ *
+ * @returns The Tool instance for getting person details
  */
-export function createGetTool(repository: PeopleRepository): Tool {
+export function createGetTool(): Tool {
   return {
     id: 'people_get',
     name: 'Get Person',
@@ -39,7 +42,7 @@ export function createGetTool(repository: PeopleRepository): Tool {
       },
     },
 
-    async execute(params: Record<string, unknown>, _execContext: ExecutionContext): Promise<ToolResult> {
+    async execute(params: Record<string, unknown>, execContext: ExecutionContext): Promise<ToolResult> {
       try {
         const { id, name } = params as GetParams
 
@@ -49,6 +52,9 @@ export function createGetTool(repository: PeopleRepository): Tool {
             error: 'Either id or name must be provided',
           }
         }
+
+        // Create repository with user-scoped storage
+        const repository = new PeopleRepository(execContext.userStorage)
 
         let person = null
 

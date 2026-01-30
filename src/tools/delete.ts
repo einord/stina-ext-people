@@ -5,7 +5,7 @@
  */
 
 import type { Tool, ToolResult, ExecutionContext } from '@stina/extension-api/runtime'
-import type { PeopleRepository } from '../db/repository.js'
+import { PeopleRepository } from '../db/repository.js'
 
 /**
  * Parameters for the delete tool
@@ -18,9 +18,12 @@ interface DeleteParams {
 }
 
 /**
- * Create the delete person tool
+ * Create the delete person tool.
+ * Uses user-scoped storage to ensure proper data isolation.
+ *
+ * @returns The Tool instance for deleting people
  */
-export function createDeleteTool(repository: PeopleRepository): Tool {
+export function createDeleteTool(): Tool {
   return {
     id: 'people_delete',
     name: 'Delete Person',
@@ -39,7 +42,7 @@ export function createDeleteTool(repository: PeopleRepository): Tool {
       },
     },
 
-    async execute(params: Record<string, unknown>, _execContext: ExecutionContext): Promise<ToolResult> {
+    async execute(params: Record<string, unknown>, execContext: ExecutionContext): Promise<ToolResult> {
       try {
         const { id, name } = params as DeleteParams
 
@@ -49,6 +52,9 @@ export function createDeleteTool(repository: PeopleRepository): Tool {
             error: 'Either id or name must be provided',
           }
         }
+
+        // Create repository with user-scoped storage
+        const repository = new PeopleRepository(execContext.userStorage)
 
         let deleted = false
 

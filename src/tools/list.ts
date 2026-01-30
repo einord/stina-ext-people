@@ -5,7 +5,7 @@
  */
 
 import type { Tool, ToolResult, ExecutionContext } from '@stina/extension-api/runtime'
-import type { PeopleRepository } from '../db/repository.js'
+import { PeopleRepository } from '../db/repository.js'
 
 /**
  * Parameters for the list tool
@@ -18,9 +18,12 @@ interface ListParams {
 }
 
 /**
- * Create the list people tool
+ * Create the list people tool.
+ * Uses user-scoped storage to ensure each user sees only their own people.
+ *
+ * @returns The Tool instance for listing people
  */
-export function createListTool(repository: PeopleRepository): Tool {
+export function createListTool(): Tool {
   return {
     id: 'people_list',
     name: 'List People',
@@ -39,9 +42,12 @@ export function createListTool(repository: PeopleRepository): Tool {
       },
     },
 
-    async execute(params: Record<string, unknown>, _execContext: ExecutionContext): Promise<ToolResult> {
+    async execute(params: Record<string, unknown>, execContext: ExecutionContext): Promise<ToolResult> {
       try {
         const { query, limit = 20 } = params as ListParams
+
+        // Create repository with user-scoped storage
+        const repository = new PeopleRepository(execContext.userStorage)
 
         const people = await repository.list({
           query,

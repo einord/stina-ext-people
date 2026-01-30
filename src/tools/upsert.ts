@@ -5,7 +5,7 @@
  */
 
 import type { Tool, ToolResult, ExecutionContext } from '@stina/extension-api/runtime'
-import type { PeopleRepository } from '../db/repository.js'
+import { PeopleRepository } from '../db/repository.js'
 import type { PersonMetadata } from '../types.js'
 
 /**
@@ -31,9 +31,12 @@ interface UpsertParams {
 }
 
 /**
- * Create the upsert person tool
+ * Create the upsert person tool.
+ * Uses user-scoped storage to ensure proper data isolation.
+ *
+ * @returns The Tool instance for adding/updating people
  */
-export function createUpsertTool(repository: PeopleRepository): Tool {
+export function createUpsertTool(): Tool {
   return {
     id: 'people_upsert',
     name: 'Add/Update Person',
@@ -78,7 +81,7 @@ export function createUpsertTool(repository: PeopleRepository): Tool {
       required: ['name'],
     },
 
-    async execute(params: Record<string, unknown>, _execContext: ExecutionContext): Promise<ToolResult> {
+    async execute(params: Record<string, unknown>, execContext: ExecutionContext): Promise<ToolResult> {
       try {
         const {
           id,
@@ -99,13 +102,16 @@ export function createUpsertTool(repository: PeopleRepository): Tool {
           }
         }
 
+        // Create repository with user-scoped storage
+        const repository = new PeopleRepository(execContext.userStorage)
+
         // Build metadata from provided fields
         // Track which fields were explicitly provided (even if empty string, to allow clearing)
-        const hasMetadataFields = 
-          relationship !== undefined || 
-          email !== undefined || 
-          phone !== undefined || 
-          birthday !== undefined || 
+        const hasMetadataFields =
+          relationship !== undefined ||
+          email !== undefined ||
+          phone !== undefined ||
+          birthday !== undefined ||
           workplace !== undefined
 
         if (id) {
@@ -120,7 +126,7 @@ export function createUpsertTool(repository: PeopleRepository): Tool {
 
           // Start with existing metadata or empty object
           const mergedMetadata: PersonMetadata = { ...(existing.metadata || {}) }
-          
+
           // Update only the fields that were explicitly provided
           // Empty strings clear the field (set to undefined)
           if (relationship !== undefined) {

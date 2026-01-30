@@ -5,7 +5,8 @@
  */
 
 /**
- * Person record stored in the database
+ * Person record stored in the storage collection.
+ * Each person document is stored as JSON in the user-scoped storage.
  */
 export interface Person {
   /** Unique identifier */
@@ -16,7 +17,7 @@ export interface Person {
   normalizedName: string
   /** Optional description or notes about the person */
   description?: string
-  /** Additional metadata as JSON */
+  /** Additional metadata */
   metadata?: PersonMetadata
   /** ISO timestamp when created */
   createdAt: string
@@ -41,9 +42,6 @@ export interface PersonMetadata {
   /** Any other custom fields */
   [key: string]: unknown
 }
-
-// Note: Database record types (PersonRecord, NewPersonRecord) are inferred
-// from the Drizzle schema in ./db/schema.ts
 
 /**
  * Input for creating or updating a person
