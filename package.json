@@ -27,7 +27,7 @@
     "url": "https://github.com/einord/stina-ext-people.git"
   },
   "devDependencies": {
-    "@stina/extension-api": "^0.22.0",
+    "@stina/extension-api": "^0.24.0",
     "@types/archiver": "^7.0.0",
     "archiver": "^7.0.1",
     "tsup": "^8.5.1",
